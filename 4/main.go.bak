@@ -1,0 +1,144 @@
+package main
+
+import (
+	"bufio"
+	"io"
+	"log"
+	"os"
+)
+
+type point struct {
+	x int
+	y int
+}
+
+type vector struct {
+	dx int
+	dy int
+}
+
+func (p point) possibilities() []word {
+	return []word{
+		p.extend(vector{1, 0}, 4),   //east
+		p.extend(vector{1, 1}, 4),   // southeast
+		p.extend(vector{0, 1}, 4),   // south
+		p.extend(vector{-1, 1}, 4),  // southwest
+		p.extend(vector{-1, 0}, 4),  // west
+		p.extend(vector{-1, -1}, 4), // northwest
+		p.extend(vector{0, -1}, 4),  // north
+		p.extend(vector{1, -1}, 4),  // northeast
+	}
+}
+
+func (p point) extend(v vector, length int) (w word) {
+	for i := 0; i < length; i++ {
+		w = append(w, point{p.x + v.dx*i, p.y + v.dy*i})
+	}
+	return
+}
+
+type word []point
+type grid [][]byte
+
+func (g grid) clamp(possibilities []word) (fits []word) {
+	for _, w := range possibilities {
+		offGrid := false
+		for _, pos := range w {
+			if pos.x < 0 || pos.y < 0 || pos.x > g.outerBound().x || pos.y > g.outerBound().y {
+				offGrid = true
+			}
+		}
+		if !offGrid {
+			fits = append(fits, w)
+		}
+	}
+	return
+}
+
+func (g grid) read(w word) string {
+	var chars []byte
+	for _, c := range w {
+		chars = append(chars, g[c.y][c.x])
+	}
+	return string(chars)
+}
+
+func (g grid) outerBound() point {
+	return point{x: g.colCount() - 1, y: g.rowCount() - 1}
+}
+
+func (g grid) rowCount() int {
+	return len(g)
+}
+
+func (g grid) colCount() int {
+	return len(g[0])
+}
+
+func main() {
+	input, err := os.Open("input4.txt")
+	// input, err := os.Open("test.txt")
+	noErr(err)
+	g := parseGrid(input)
+
+	var foundWords []word
+	for y := 0; y < g.rowCount(); y++ {
+		for x := 0; x < g.colCount(); x++ {
+
+			p := point{x, y}
+			possibilities := p.possibilities()
+			checkWords := g.clamp(possibilities)
+
+			// for _, cw := range checkWords {
+			// 	log.Println(g.read(cw), cw)
+			// }
+			for _, w := range checkWords {
+				if g.read(w) == "XMAS" {
+					log.Println("FOUND", g.read(w), w)
+					foundWords = append(foundWords, w)
+				}
+			}
+		}
+	}
+
+	for _, fw := range foundWords {
+		log.Println(g.read(fw), fw)
+	}
+
+	relevantPoints := make(map[point]struct{})
+
+	for _, fw := range foundWords {
+		for _, fp := range fw {
+			relevantPoints[fp] = struct{}{}
+		}
+	}
+
+	for y := 0; y < g.rowCount(); y++ {
+		var line []byte
+		for x := 0; x < g.colCount(); x++ {
+			if _, ok := relevantPoints[point{x, y}]; !ok {
+				line = append(line, '.')
+			} else {
+				line = append(line, g[y][x])
+			}
+		}
+		log.Println(string(line))
+	}
+	log.Println("count", len(foundWords))
+
+}
+
+func parseGrid(r io.Reader) (g grid) {
+	lineScanner := bufio.NewScanner(r)
+	lineScanner.Split(bufio.ScanLines)
+	for lineScanner.Scan() {
+		g = append(g, lineScanner.Bytes())
+	}
+	return
+}
+
+func noErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
