@@ -99,6 +99,12 @@ func main() {
 	// row, col := len(input), len(input[0])
 
 	sx, sy := -1, -1
+	directions := []direction{
+		{0, -1},
+		{1, 0},
+		{0, 1},
+		{-1, 0},
+	}
 
 	for row := range input {
 		for col := range input {
@@ -114,9 +120,7 @@ func main() {
 		posX: sx,
 		posY: sy,
 
-		dir: direction{
-			0, -1,
-		},
+		dir: directions[0],
 
 		distinctPositions: 1,
 		plot:              input,
