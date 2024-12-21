@@ -5,13 +5,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/sirupsen/logrus"
+	l "github.com/sirupsen/logrus"
 )
 
 func main() {
-	logrus.SetLevel(logrus.DebugLevel)
+	l.SetLevel(l.DebugLevel)
 
-	file, err := os.Open("input.txt")
+	file, err := os.Open(os.Args[1])
 	noErr(err)
 	defer file.Close()
 

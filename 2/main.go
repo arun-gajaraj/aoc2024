@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	safeReports int
+	safeReports             int
 	safeReportsWithDampener int
 )
 
@@ -50,12 +50,11 @@ func main() {
 		}
 
 		if safeAfterDampening(numbers) {
-	fmt.Printf("Number of safe reports without dampener: %d", safeReports)
+			fmt.Printf("Number of safe reports without dampener: %d", safeReports)
 		}
 
 	}
 
-	fmt.Printf("Number of safe reports without dampener: %d\n", safeReportsWODampener)
 	fmt.Printf("Number of safe reports WITH dampener: %d\n", safeReportsWithDampener)
 }
 

@@ -1,0 +1,98 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
+
+	l "github.com/sirupsen/logrus"
+)
+
+// does not work.
+func main() {
+	l.SetLevel(l.DebugLevel)
+
+	file, err := os.Open("sample.txt")
+	noErr(err)
+	defer file.Close()
+
+	input := readInput(file)
+
+	area := make(map[string]int)
+
+	for _, line := range input {
+		for _, d := range line {
+			area[string(d)] += 1
+		}
+	}
+
+	fmt.Printf("area %v\n", area)
+
+	checkAdj := func(x int, y int, current string) bool {
+		if x < 0 || x >= len(input[0]) || y < 0 || y >= len(input) {
+			return false
+		}
+
+		if string(input[y][x]) == current {
+			return true
+		} else {
+			return false
+		}
+	}
+
+	peri := make(map[string]int)
+
+	for y := range input {
+		for x := range input[y] {
+
+			cp := 0
+			currentType := string(input[y][x])
+
+			if !checkAdj(x+0, y-1, currentType) {
+				cp++
+			}
+			if !checkAdj(x+1, y+0, currentType) {
+				cp++
+			}
+			if !checkAdj(x+0, y+1, currentType) {
+				cp++
+			}
+			if !checkAdj(x-1, y+0, currentType) {
+				cp++
+			}
+
+			peri[currentType] += cp
+
+		}
+	}
+
+	fmt.Printf("peri %v\n", peri)
+	cost := 0
+
+	for k := range area {
+
+		cost += area[k] * peri[k]
+	}
+
+	l.Infoln("Total cost of fence :", cost)
+}
+
+func noErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func readInput(r io.Reader) [][]byte {
+
+	var input [][]byte
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		lineCopy := make([]byte, len(scanner.Bytes()))
+		copy(lineCopy, scanner.Bytes())
+		input = append(input, lineCopy)
+	}
+	return input
+
+}
